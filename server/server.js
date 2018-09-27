@@ -29,25 +29,25 @@ app.get('/todos', (req, res) => {
 });
 
 var notFound = (res) => {
-    res.status(400).send();
+    res.status(404).send();
 }
 
 app.get('/todos/:id', (req, res) => {
     var id = req.params.id;
     if(!ObjectID.isValid(id)){
-        console.log("Id is not valid");
+        // console.log("Id is not valid");
         return notFound(res);
     }
 
     Todo.findById(id).then((todo) => {
         if(!todo){
-            console.log("No todo is found");
+            // console.log("No todo is found");
             return notFound(res);
         }
         res.send({todo});
     }).catch((e) => {
-        console.log("Error in finding ID");
-        return notFound(res);
+        // console.log("Error in finding ID");
+        return res.status(400).send();
     });
     //respond with 404 if invalid, send back empty body
     //findbyid: success(send it back, if no (send back 404 with empty body)) and error case(400 and send empty body)
