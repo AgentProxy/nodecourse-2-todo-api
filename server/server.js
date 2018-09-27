@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
@@ -50,9 +51,6 @@ app.get('/todos/:id', (req, res) => {
         // console.log("Error in finding ID");
         return res.status(400).send();
     });
-    //respond with 404 if invalid, send back empty body
-    //findbyid: success(send it back, if no (send back 404 with empty body)) and error case(400 and send empty body)
-    // res.send(req.params);
 });
 
 app.delete('/todos/:id', (req, res) => {
@@ -63,12 +61,36 @@ app.delete('/todos/:id', (req, res) => {
 
     Todo.findByIdAndRemove(id).then((todo) => {
         if(!todo){
-            // console.log("No todo is found");
             return notFound(res);
         }
         res.status(200).send({todo});
     }).catch((e) => {
         return res.status(400).send();
+    })
+});
+
+app.patch('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    var body = _.pick(req.body, ['text', 'completed']);
+    if(!ObjectID.isValid(id)){
+        return notFound(res);
+    }
+
+    if(_.isBoolean(body.completed) && body.completed){
+        body.completedAt = new Date().getTime();
+    }
+    else{
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+        if(!todo){
+            return notFound(res);
+        }
+        res.send({todo});
+    }).catch((e) => {
+        res.status(400).send();
     })
 });
 
