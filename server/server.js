@@ -6,7 +6,7 @@ const {ObjectID} = require('mongodb');
 const {mongoose} = require('../db/mongoose');
 const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
-
+const {authenticate} = require('./middleware/authenticate');
 const app = express();
 const port = process.env.PORT;
 
@@ -97,10 +97,6 @@ app.patch('/todos/:id', (req, res) => {
 app.post('/users/add', (req, res) =>{
     var body = _.pick(req.body, ['email', 'password']);
     let user = new User(body);
-
-
-
-
     user.save().then(() => {
         return user.generateAuthToken();
     }).then((token) => {
@@ -113,6 +109,11 @@ app.post('/users/add', (req, res) =>{
 app.listen(port, ()=>{
     console.log(`Started on port ${port}`);
 });
+
+
+app.get("/users/me", authenticate, (req, res) => {
+    res.send(req.user);
+})
 
 module.exports = {
     app
