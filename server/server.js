@@ -38,18 +38,15 @@ var notFound = (res) => {
 app.get('/todos/:id', (req, res) => {
     var id = req.params.id;
     if(!ObjectID.isValid(id)){
-        // console.log("Id is not valid");
         return notFound(res);
     }
 
     Todo.findById(id).then((todo) => {
         if(!todo){
-            // console.log("No todo is found");
             return notFound(res);
         }
         res.send({todo});
     }).catch((e) => {
-        // console.log("Error in finding ID");
         return res.status(400).send();
     });
 });
@@ -93,6 +90,24 @@ app.patch('/todos/:id', (req, res) => {
     }).catch((e) => {
         res.status(400).send();
     })
+});
+
+// USER
+
+app.post('/users/add', (req, res) =>{
+    var body = _.pick(req.body, ['email', 'password']);
+    let user = new User(body);
+
+
+
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
 });
 
 app.listen(port, ()=>{
